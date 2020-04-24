@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  gfi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: good_first_issue
+    env_file: .env
+    volumes:
+      - .:/app:cached
