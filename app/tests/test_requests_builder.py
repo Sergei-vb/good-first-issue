@@ -1,13 +1,13 @@
 import unittest
 
 from ..custom_errors import WrongAttributeError
-from ..requests_builder import IssuesSearchRequest
+from ..requests_builder import IssueSearchRequest
 
 
 class IssuesSearchRequestTestCase(unittest.TestCase):
 
     def test_final_url(self):  # TODO: patch side effects
-        instance = IssuesSearchRequest()
+        instance = IssueSearchRequest()
         instance.add_label('good first issue')
         instance.add_language('python')
         instance.add_state('open')
@@ -21,11 +21,12 @@ class IssuesSearchRequestTestCase(unittest.TestCase):
         )
 
     def test_final_url_with_not_default_page(self):  # TODO: patch side effects
-        instance = IssuesSearchRequest(page=3)
+        instance = IssueSearchRequest()
         instance.add_label('good first issue')
         instance.add_language('python')
         instance.add_state('open')
         instance.add_archived('false')
+        instance.add_page(3)
         instance.send()
         self.assertEqual(
             instance.url,
@@ -35,6 +36,6 @@ class IssuesSearchRequestTestCase(unittest.TestCase):
         )
 
     def test_raised_error_if_send_called_with_no_any_qualifiers(self):
-        instance = IssuesSearchRequest()
+        instance = IssueSearchRequest()
         with self.assertRaises(WrongAttributeError):
             instance.send()
