@@ -7,8 +7,11 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 
 ENV PATH=$PATH:/root/.poetry/bin
 
-ADD . /app/
-WORKDIR /app/
+ADD poetry-project/ /poetry-project/
 RUN (cd poetry-project && poetry install)
+
+ADD app/ /app/
+ADD .env /app/
+WORKDIR /app/
 
 ENTRYPOINT [ "sleep", "infinity" ]

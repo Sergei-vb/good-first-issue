@@ -1,10 +1,23 @@
 version: "3.7"
 services:
-  gfi:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: good_first_issue
+    container_name: gfi_backend
     env_file: .env
-    volumes:
-      - .:/app:cached
+    #volumes:
+    #  - app/:/app:cached
+    depends_on:
+      - db
+    networks:
+      - gfi
+  db:
+    image: postgres:12-alpine
+    container_name: gfi_database
+    env_file: .env
+    networks:
+      - gfi
+
+networks:
+  gfi:
