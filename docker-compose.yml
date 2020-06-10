@@ -10,8 +10,8 @@ services:
       - "8000:8000"
     tty: true
     env_file: .env
-    #volumes:
-    #  - app/:/app:cached
+    volumes:
+      - .:/gfi:cached
     depends_on:
       - db
     networks:
