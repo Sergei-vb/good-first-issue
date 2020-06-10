@@ -5,6 +5,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: gfi_backend
+    entrypoint: sh start.sh
+    ports:
+      - "8000:8000"
+    tty: true
     env_file: .env
     #volumes:
     #  - app/:/app:cached
