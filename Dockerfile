@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     curl \
     musl-dev \
     build-base \
-    postgresql-dev
+    postgresql-dev \
+    libffi-dev
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
