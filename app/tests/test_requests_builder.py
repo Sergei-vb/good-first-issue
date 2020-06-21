@@ -28,7 +28,6 @@ class SearchRequestTestCase(unittest.TestCase):  # TODO: patch aiohttp and gino
 
     def test_url(self):
         child = self._get_class(data_type='right', q_params={'one': 'a', 'two': 'b'})()
-        child.send()
         self.assertEqual(
             child.url,
             'https://api.github.com/search/right' +
@@ -41,7 +40,6 @@ class SearchRequestTestCase(unittest.TestCase):  # TODO: patch aiohttp and gino
             q_params={'one': 'a', 'two': 'b'},
             page=0
         )()
-        child.send()
         self.assertEqual(
             child.url,
             'https://api.github.com/search/right' +
@@ -49,43 +47,36 @@ class SearchRequestTestCase(unittest.TestCase):  # TODO: patch aiohttp and gino
         )
 
     def test_url_with_no_data_type_attr(self):
-        child = self._get_class(q_params={'one': 'a', 'two': 'b'})()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(q_params={'one': 'a', 'two': 'b'})()
 
     def test_url_with_not_bool_data_type_attr(self):
-        child = self._get_class(data_type='', q_params={'one': 'a', 'two': 'b'})()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(data_type='', q_params={'one': 'a', 'two': 'b'})()
 
     def test_url_with_wrong_type_of_data_type_attr(self):
-        child = self._get_class(data_type=1, q_params={'one': 'a', 'two': 'b'})()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(data_type=1, q_params={'one': 'a', 'two': 'b'})()
 
     def test_url_with_no_query_params_attr(self):
-        child = self._get_class(data_type='right')()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(data_type='right')()
 
     def test_url_with_not_bool_query_params_attr(self):
-        child = self._get_class(data_type='right', q_params={})()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(data_type='right', q_params={})()
 
     def test_url_with_wrong_type_of_query_params_attr(self):
-        child = self._get_class(data_type='right', q_params=[1, 2, 3])()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(data_type='right', q_params=[1, 2, 3])()
 
     def test_url_with_wrong_type_of_page_attr(self):
-        child = self._get_class(
-            data_type='right',
-            q_params={'one': 'a', 'two': 'b'},
-            page='qwe'
-        )()
         with self.assertRaises(WrongAttrError):
-            child.send()
+            self._get_class(
+                data_type='right',
+                q_params={'one': 'a', 'two': 'b'},
+                page='qwe'
+            )()
 
 
 class IssueSearchRequestTestCase(unittest.TestCase):  # TODO: patch aiohttp and gino
@@ -96,7 +87,6 @@ class IssueSearchRequestTestCase(unittest.TestCase):  # TODO: patch aiohttp and 
             language='python',
             page=3,
         )
-        instance.send()
         self.assertEqual(
             instance.url,
             'https://api.github.com/search/issues' +

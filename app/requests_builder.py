@@ -1,6 +1,7 @@
+from typing import Optional
 from urllib.parse import urljoin
 
-import requests
+import aiohttp
 
 from .custom_errors import WrongAttrError, WrongResponse, WrongValueError
 from .models import Issue, Repository
@@ -12,13 +13,8 @@ class SearchRequest:
 
     def __init__(self, page=1):
         self.page = page or 1
-        self.url = None
+        self.url = self._build_url()
         self.response = None
-
-    def send(self) -> None:  # TODO: add async
-        self._build_url()
-        #self.response = await requests.get(self.url)  # TODO: change to aiohttp
-        #await self._save_into_db()
 
     def _build_url(self):
         self._validate_url_attrs()
@@ -29,7 +25,7 @@ class SearchRequest:
         query = '+'.join(
             ['{}:{}'.format(k, v) for k, v in self.query_params.items()]
         )
-        self.url = raw_url.format(query, self.page)
+        return raw_url.format(query, self.page)
 
     def _validate_url_attrs(self):
         if (
@@ -42,6 +38,17 @@ class SearchRequest:
             or not isinstance(self.page, int)
         ):
             raise WrongAttrError
+
+    async def send(self) -> None:
+        self.response = await self._get_json()
+        #await self._save_into_db()
+
+    async def _get_json(self, url: Optional[str] = None):  # TODO: add an annotation for return; add tests!
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url or self.url) as response:
+                if response.status != 200:
+                    raise WrongResponse
+                return await response.json()
 
 
 class IssueSearchRequest(SearchRequest):
@@ -77,10 +84,7 @@ class IssueSearchRequest(SearchRequest):
     #async def _save_into_db(self):  # TODO: tests
     #    repositories = []
     #
-    #    if not self.response or not self.response.ok:
-    #        raise WrongResponse
-    #
-    #    for item in self.response.json()['items']:
+    #    for item in self.response['items']:
     #        await Issue.create(
     #            issue_id=item['id'],
     #            api_url=item['url'],
@@ -98,11 +102,7 @@ class IssueSearchRequest(SearchRequest):
     #
     #async def _save_connected_repositories_into_db(self, reps):  # TODO: tests
     #    for rep in reps:
-    #        response = requests.get(rep)
-    #        if not response.ok:
-    #            raise WrongResponse
-    #
-    #        result = response.json()
+    #        result = await self._get_json(url=rep)
     #
     #        await Repository.create(
     #            repository_id=result['id'],
