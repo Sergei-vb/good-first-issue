@@ -8,7 +8,6 @@ authors = ["Sergei Bogolepov <bogolepovsergei1@gmail.com>"]
 python = "^3.8"
 sanic = "^20.3.0"
 gino = "^1.0.1"
-requests = "^2.23.0"
 alembic = "^1.4.2"
 psycopg2 = "^2.8.5"
 aiohttp = {extras = ["speedups"], version = "^3.6.2"}
