@@ -1,11 +1,35 @@
+import os
 from typing import Optional
 from urllib.parse import urljoin
 
 import aiohttp
 
-from .custom_errors import WrongAttrError, WrongResponse, WrongValueError
-from .models import Issue, Repository
+from .custom_errors import (
+    EnvironmentVariablesError,
+    WrongAttrError,
+    WrongResponseError,
+    WrongValueError,
+)
+from .models import db, Issue, Repository
 
+connection_data = {
+    'user': os.getenv('POSTGRES_USER'),
+    'password': os.getenv('POSTGRES_PASSWORD'),
+    'host': os.getenv('DATABASE_HOST'),
+    'port': os.getenv('DATABASE_PORT'),
+    'database': os.getenv('POSTGRES_DB')
+}
+
+if None in connection_data.values():
+    raise EnvironmentVariablesError
+
+DB_URL = 'postgres://{user}:{password}@{host}:{port}/{database}'.format(
+    user=connection_data['user'],
+    password=connection_data['password'],
+    host=connection_data['host'],
+    port=connection_data['port'],
+    database=connection_data['database']
+)
 GITHUB_API_SEARCH_URL = 'https://api.github.com/search/'
 
 
@@ -41,13 +65,15 @@ class SearchRequest:
 
     async def send(self) -> None:
         self.response = await self._get_json()
-        #await self._save_into_db()
+
+        async with db.with_bind(DB_URL):
+            await self._save_into_db()
 
     async def _get_json(self, url: Optional[str] = None):  # TODO: add an annotation for return; add tests!
         async with aiohttp.ClientSession() as session:
             async with session.get(url or self.url) as response:
                 if response.status != 200:
-                    raise WrongResponse
+                    raise WrongResponseError
                 return await response.json()
 
 
@@ -81,40 +107,40 @@ class IssueSearchRequest(SearchRequest):
         ):
             raise WrongValueError
 
-    #async def _save_into_db(self):  # TODO: tests
-    #    repositories = []
-    #
-    #    for item in self.response['items']:
-    #        await Issue.create(
-    #            issue_id=item['id'],
-    #            api_url=item['url'],
-    #            html_url=item['html_url'],
-    #            title=item['title'],
-    #            created_at=item['created_at'],
-    #            updated_at=item['updated_at'],
-    #            closed_at=item['closed_at'],
-    #            comments_count=item['comments'],
-    #            labels=[label['name'] for label in item['labels']],
-    #            repository_api_url=item['repository_url'],
-    #        )
-    #        repositories.append(item['repository_url'])
-    #    await self._save_connected_repositories_into_db(repositories)
-    #
-    #async def _save_connected_repositories_into_db(self, reps):  # TODO: tests
-    #    for rep in reps:
-    #        result = await self._get_json(url=rep)
-    #
-    #        await Repository.create(
-    #            repository_id=result['id'],
-    #            api_url=result['url'],
-    #            html_url=result['html_url'],
-    #            name=result['name'],
-    #            full_name=result['full_name'],
-    #            fork=result['fork'],
-    #            archived=result['archived'],
-    #            forks_count=result['forks_count'],
-    #            stargazers_count=result['stargazers_count'],
-    #        )
+    async def _save_into_db(self):  # TODO: tests
+        repositories = []
+
+        for item in self.response['items']:
+            await Issue.create(
+                issue_id=item['id'],
+                api_url=item['url'],
+                html_url=item['html_url'],
+                title=item['title'],
+                created_at=item['created_at'],
+                updated_at=item['updated_at'],
+                closed_at=item['closed_at'],
+                comments_count=item['comments'],
+                labels=[label['name'] for label in item['labels']],
+                repository_api_url=item['repository_url'],
+            )
+            repositories.append(item['repository_url'])
+        await self._save_connected_repositories_into_db(repositories)
+
+    async def _save_connected_repositories_into_db(self, reps):  # TODO: tests
+        for rep in reps:
+            result = await self._get_json(url=rep)
+
+            await Repository.create(
+                repository_id=result['id'],
+                api_url=result['url'],
+                html_url=result['html_url'],
+                name=result['name'],
+                full_name=result['full_name'],
+                fork=result['fork'],
+                archived=result['archived'],
+                forks_count=result['forks_count'],
+                stargazers_count=result['stargazers_count'],
+            )
 
 
 class RepositorySearchRequest(SearchRequest):

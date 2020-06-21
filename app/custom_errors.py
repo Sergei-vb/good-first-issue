@@ -11,5 +11,9 @@ class WrongValueError(Error):
     pass
 
 
-class WrongResponse(Error):
+class WrongResponseError(Error):
+    pass
+
+
+class EnvironmentVariablesError(Error):
     pass
