@@ -1,35 +1,17 @@
-import os
 from typing import Optional
 from urllib.parse import urljoin
 
 import aiohttp
 
+from .config import get_db_url
 from .custom_errors import (
-    EnvironmentVariablesError,
     WrongAttrError,
     WrongResponseError,
     WrongValueError,
 )
 from .models import db, Issue, Repository
 
-connection_data = {
-    'user': os.getenv('POSTGRES_USER'),
-    'password': os.getenv('POSTGRES_PASSWORD'),
-    'host': os.getenv('DATABASE_HOST'),
-    'port': os.getenv('DATABASE_PORT'),
-    'database': os.getenv('POSTGRES_DB')
-}
-
-if None in connection_data.values():
-    raise EnvironmentVariablesError
-
-DB_URL = 'postgres://{user}:{password}@{host}:{port}/{database}'.format(
-    user=connection_data['user'],
-    password=connection_data['password'],
-    host=connection_data['host'],
-    port=connection_data['port'],
-    database=connection_data['database']
-)
+DB_URL = get_db_url()
 GITHUB_API_SEARCH_URL = 'https://api.github.com/search/'
 
 
