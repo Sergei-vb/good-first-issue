@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from urllib.parse import urljoin
 
@@ -58,6 +59,12 @@ class SearchRequest:
                     raise WrongResponseError
                 return await response.json()
 
+    @staticmethod
+    def get_right_datetime(d_time: str) -> Optional[datetime]:
+        if d_time is None:
+            return None
+        return datetime.strptime(d_time, '%Y-%m-%dT%H:%M:%SZ')
+
 
 class IssueSearchRequest(SearchRequest):
     data_type = 'issues'
@@ -90,38 +97,34 @@ class IssueSearchRequest(SearchRequest):
             raise WrongValueError
 
     async def _save_into_db(self):  # TODO: tests
-        repositories = []
 
-        for item in self.response['items']:
-            await Issue.create(
-                issue_id=item['id'],
-                api_url=item['url'],
-                html_url=item['html_url'],
-                title=item['title'],
-                created_at=item['created_at'],
-                updated_at=item['updated_at'],
-                closed_at=item['closed_at'],
-                comments_count=item['comments'],
-                labels=[label['name'] for label in item['labels']],
-                repository_api_url=item['repository_url'],
-            )
-            repositories.append(item['repository_url'])
-        await self._save_connected_repositories_into_db(repositories)
-
-    async def _save_connected_repositories_into_db(self, reps):  # TODO: tests
-        for rep in reps:
-            result = await self._get_json(url=rep)
+        for issue_item in self.response['items']:
+            # TODO: check if repository already exists !!!
+            rep_item = await self._get_json(url=issue_item['repository_url'])
 
             await Repository.create(
-                repository_id=result['id'],
-                api_url=result['url'],
-                html_url=result['html_url'],
-                name=result['name'],
-                full_name=result['full_name'],
-                fork=result['fork'],
-                archived=result['archived'],
-                forks_count=result['forks_count'],
-                stargazers_count=result['stargazers_count'],
+                repository_id=rep_item['id'],
+                api_url=rep_item['url'],
+                html_url=rep_item['html_url'],
+                name=rep_item['name'],
+                full_name=rep_item['full_name'],
+                fork=rep_item['fork'],
+                archived=rep_item['archived'],
+                forks_count=rep_item['forks_count'],
+                stargazers_count=rep_item['stargazers_count'],
+            )
+
+            await Issue.create(  # TODO: add checking if already exists
+                issue_id=issue_item['id'],
+                api_url=issue_item['url'],
+                html_url=issue_item['html_url'],
+                title=issue_item['title'],
+                created_at=self.get_right_datetime(issue_item['created_at']),
+                updated_at=self.get_right_datetime(issue_item['updated_at']),
+                closed_at=self.get_right_datetime(issue_item['closed_at']),
+                comments_count=issue_item['comments'],
+                labels=[label['name'] for label in issue_item['labels']],
+                repository_api_url=issue_item['repository_url'],
             )
 
 
