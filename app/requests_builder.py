@@ -15,12 +15,12 @@ class SearchRequest:
         self.url = None
         self.response = None
 
-    def send(self):  # TODO: add async
+    def send(self) -> None:  # TODO: add async
         self._build_url()
         #self.response = await requests.get(self.url)  # TODO: change to aiohttp
-        #await self.save_into_db()
+        #await self._save_into_db()
 
-    def _build_url(self) -> None:
+    def _build_url(self):
         self._validate_url_attrs()
         raw_url = urljoin(
             urljoin(GITHUB_API_SEARCH_URL, self.data_type),
@@ -74,7 +74,7 @@ class IssueSearchRequest(SearchRequest):
         ):
             raise WrongValueError
 
-    #async def save_into_db(self):  # TODO: tests
+    #async def _save_into_db(self):  # TODO: tests
     #    repositories = []
     #
     #    if not self.response or not self.response.ok:
