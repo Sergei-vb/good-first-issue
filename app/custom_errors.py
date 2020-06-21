@@ -3,9 +3,13 @@ class Error(Exception):
     pass
 
 
-class WrongAttributeError(Error):
+class WrongAttrError(Error):
     pass
 
 
 class WrongValueError(Error):
+    pass
+
+
+class WrongResponse(Error):
     pass
