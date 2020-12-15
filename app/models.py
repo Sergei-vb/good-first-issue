@@ -4,7 +4,7 @@ db = Gino()
 
 
 class Issue(db.Model):
-    __tablename__ = 'issues'
+    __tablename__ = "issues"
 
     id = db.Column(db.Integer, primary_key=True)
     issue_id = db.Column(db.Integer, unique=True)
@@ -18,13 +18,13 @@ class Issue(db.Model):
     labels = db.Column(db.ARRAY(db.String(length=255)))
     repository_api_url = db.Column(
         db.String(length=255),
-        db.ForeignKey('repositories.api_url', ondelete='CASCADE'),
+        db.ForeignKey("repositories.api_url", ondelete="CASCADE"),
         nullable=False,
     )
 
 
 class Repository(db.Model):
-    __tablename__ = 'repositories'
+    __tablename__ = "repositories"
 
     id = db.Column(db.Integer, primary_key=True)
     repository_id = db.Column(db.Integer, unique=True)
